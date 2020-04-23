@@ -18,6 +18,7 @@ Pacman agents (in searchAgents.py).
 """
 
 import util
+from util import PriorityQueue, Queue, Stack
 
 class SearchProblem:
     """
@@ -86,18 +87,45 @@ def depthFirstSearch(problem):
     print("Is the start a goal?", problem.isGoalState(problem.getStartState()))
     print("Start's successors:", problem.getSuccessors(problem.getStartState()))
     """
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    start_state = problem.getStartState()
+    visited, fringe = set(), Stack()
+    fringe.push((start_state, []))
+
+    while not fringe.isEmpty():
+        vertex, path = fringe.pop()
+
+        if problem.isGoalState(vertex): return path
+
+        if vertex not in visited:
+            visited.add(vertex)
+            for next in problem.getSuccessors(vertex):
+                if next[0] not in visited:
+                    fringe.push((next[0], path + [next[1]]))
+
+    return []
 
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    start_state = problem.getStartState()
+    visited, fringe = set(), Queue()
+    fringe.push((start_state, []))
+
+    while not fringe.isEmpty():
+        vertex, path = fringe.pop()
+
+        if problem.isGoalState(vertex):
+            return path
+
+        if vertex not in visited:
+            visited.add(vertex)
+            for next in problem.getSuccessors(vertex):
+                if next[0] not in visited:
+                    fringe.push((next[0], path + [next[1]]))
+
+    return []
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
 
 def nullHeuristic(state, problem=None):
     """
