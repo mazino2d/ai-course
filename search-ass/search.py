@@ -73,10 +73,8 @@ def tinyMazeSearch(problem):
     w = Directions.WEST
     return  [s, s, w, s, w, w, s, w]
 
-def depthFirstSearch(problem):
+def graphSearch(problem, data_structure):
     """
-    Search the deepest nodes in the search tree first.
-
     Your search algorithm needs to return a list of actions that reaches the
     goal. Make sure to implement a graph search algorithm.
 
@@ -88,7 +86,7 @@ def depthFirstSearch(problem):
     print("Start's successors:", problem.getSuccessors(problem.getStartState()))
     """
     start_state = problem.getStartState()
-    visited, fringe = set(), Stack()
+    visited, fringe = set(), data_structure()
     fringe.push((start_state, []))
 
     while not fringe.isEmpty():
@@ -104,14 +102,22 @@ def depthFirstSearch(problem):
 
     return []
 
+def depthFirstSearch(problem):
+    """Search the deepest nodes in the search tree first."""
+    return graphSearch(problem, Stack)
+
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
+    return graphSearch(problem, Queue)
+
+def uniformCostSearch(problem):
+    """Search the node of least total cost first."""
     start_state = problem.getStartState()
-    visited, fringe = set(), Queue()
-    fringe.push((start_state, []))
+    visited, fringe = set(), PriorityQueue()
+    fringe.push((start_state, [], 0), 0)
 
     while not fringe.isEmpty():
-        vertex, path = fringe.pop()
+        vertex, path, cost = fringe.pop()
 
         if problem.isGoalState(vertex):
             return path
@@ -120,12 +126,10 @@ def breadthFirstSearch(problem):
             visited.add(vertex)
             for next in problem.getSuccessors(vertex):
                 if next[0] not in visited:
-                    fringe.push((next[0], path + [next[1]]))
+                    new_cost = cost + next[2]
+                    fringe.push((next[0], path + [next[1]], new_cost), new_cost)
 
     return []
-
-def uniformCostSearch(problem):
-    """Search the node of least total cost first."""
 
 def nullHeuristic(state, problem=None):
     """
