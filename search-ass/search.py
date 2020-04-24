@@ -90,13 +90,13 @@ def graphSearch(problem, data_structure):
     fringe.push((start_state, []))
 
     while not fringe.isEmpty():
-        vertex, path = fringe.pop()
+        state, path = fringe.pop()
 
-        if problem.isGoalState(vertex): return path
+        if problem.isGoalState(state): return path
 
-        if vertex not in visited:
-            visited.add(vertex)
-            for next in problem.getSuccessors(vertex):
+        if state not in visited:
+            visited.add(state)
+            for next in problem.getSuccessors(state):
                 if next[0] not in visited:
                     fringe.push((next[0], path + [next[1]]))
 
