@@ -291,14 +291,14 @@ class CornersProblem(search.SearchProblem):
         Returns the start state (in your state space, not the full Pacman state
         space)
         """
-        return self.startingPosition + (False, False, False, False)
+        return self.startingPosition, (False, False, False, False)
 
     def isGoalState(self, state):
         """
         Returns whether this search state is a goal state of the problem.
         """
-        _, _, corner1, corner2, corner3, corner4 = state
-        return corner1 and corner2 and corner3 and corner4
+        position, corner_states = state
+        return not (False in corner_states)
 
     def getSuccessors(self, state):
         """
@@ -312,19 +312,22 @@ class CornersProblem(search.SearchProblem):
         """
 
         successors = []
-        x, y, corner1, corner2, corner3, corner4 = state
+        position, corner_states = state
+        corners_position = self.corners
         
         top, right = self.walls.height-2, self.walls.width-2
         for action in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
             dx, dy = Actions.directionToVector(action)
-            nextx, nexty = int(x + dx), int(y + dy)
+            nextx, nexty = int(position[0] + dx), int(position[1] + dy)
             if not self.walls[nextx][nexty]:
-                nextPosition = (nextx, nexty)
-                cornerState =   True if nextPosition == (1,1) else corner1, \
-                                True if nextPosition == (1,top) else corner2, \
-                                True if nextPosition == (right, 1) else corner3, \
-                                True if nextPosition == (right, top) else corner4
-                nextState = (nextPosition) + (cornerState)
+                next_position = (nextx, nexty)
+                next_corner_states = []
+                for idx in range(4):
+                    if next_position == corners_position[idx]:
+                        next_corner_states.append(True,)
+                    else:
+                        next_corner_states.append(corner_states[idx],)
+                nextState = next_position, tuple(next_corner_states)
                 successors.append((nextState, action, 1))
 
         self._expanded += 1 # DO NOT CHANGE
@@ -360,7 +363,6 @@ def cornersHeuristic(state, problem):
     corners = problem.corners # These are the corner coordinates
     walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
 
-    "*** YOUR CODE HERE ***"
     return 0 # Default to trivial solution
 
 class AStarCornersAgent(SearchAgent):

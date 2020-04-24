@@ -85,6 +85,7 @@ def graphSearch(problem, data_structure):
     print("Is the start a goal?", problem.isGoalState(problem.getStartState()))
     print("Start's successors:", problem.getSuccessors(problem.getStartState()))
     """
+    print("Start:", problem.getStartState())
     start_state = problem.getStartState()
     visited, fringe = set(), data_structure()
     fringe.push((start_state, []))
