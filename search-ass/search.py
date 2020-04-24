@@ -137,8 +137,9 @@ def aStarSearch(problem, heuristic=nullHeuristic):
             visited.add(vertex)
             for next in problem.getSuccessors(vertex):
                 if next[0] not in visited:
-                    new_cost = cost + next[2] + heuristic(next[0], problem)
-                    fringe.push((next[0], path + [next[1]], new_cost), new_cost)
+                    new_cost = cost + next[2]
+                    estimated_cost = new_cost + heuristic(next[0], problem)
+                    fringe.push((next[0], path + [next[1]], new_cost), estimated_cost)
     
     return []
 
