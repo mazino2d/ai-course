@@ -125,8 +125,6 @@ class MinimaxAgent(MultiAgentSearchAgent):
         and self.evaluationFunction.
         """
         maxValue = float("-inf")
-        alpha = float("-inf")
-        beta = float("inf")
 
         maxAction = Directions.STOP
         for action in gameState.getLegalActions(0):
@@ -135,7 +133,6 @@ class MinimaxAgent(MultiAgentSearchAgent):
             if nextValue > maxValue:
                 maxValue = nextValue
                 maxAction = action
-            alpha = max(alpha, maxValue)
 
         return maxAction
 
@@ -224,19 +221,51 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         return minValue
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
-    """
-      Your expectimax agent (question 4)
-    """
-
+    
     def getAction(self, gameState):
         """
-        Returns the expectimax action using self.depth and self.evaluationFunction
-
-        All ghosts should be modeled as choosing uniformly at random from their
-        legal moves.
+          Returns the expectimax action using self.depth and self.evaluationFunction
+          All ghosts should be modeled as choosing uniformly at random from their
+          legal moves.
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        maxValue = float("-inf")
+        maxAction = Directions.STOP
+        for action in gameState.getLegalActions(0):
+            nextState = gameState.generateSuccessor(0, action)
+            nextValue = self.getValue(nextState, 0, 1)
+            if nextValue > maxValue:
+                maxValue = nextValue
+                maxAction = action
+
+        return maxAction
+
+    def getValue(self, gameState, currentDepth, agentIndex):
+        if currentDepth == self.depth or gameState.isWin() or gameState.isLose():
+            return self.evaluationFunction(gameState)
+        elif agentIndex == 0:
+            return self.maxValue(gameState,currentDepth)
+        else:
+            return self.avgValue(gameState,currentDepth,agentIndex)
+
+    def maxValue(self, gameState, currentDepth):
+        maxValue = float("-inf")
+
+        for action in gameState.getLegalActions(0):
+            maxValue = max(maxValue, self.getValue(gameState.generateSuccessor(0, action), currentDepth, 1))
+
+        return maxValue
+
+    def avgValue(self, gameState, currentDepth, agentIndex):
+        avgValue = 0
+
+        for action in gameState.getLegalActions(agentIndex):
+            print(avgValue)
+            if agentIndex == gameState.getNumAgents()-1:
+                avgValue = avgValue + self.getValue(gameState.generateSuccessor(agentIndex, action), currentDepth+1, 0)
+            else:
+                avgValue = avgValue + self.getValue(gameState.generateSuccessor(agentIndex, action), currentDepth, agentIndex+1)
+
+        return avgValue
 
 def betterEvaluationFunction(currentGameState):
     """
