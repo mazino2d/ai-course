@@ -267,33 +267,63 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
 
         return avgValue
 
+
+ 
+ 
+ 
+ 
+ 
+ 
 def betterEvaluationFunction(currentGameState):
     """
-      Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable
-      evaluation function (question 5).
-      DESCRIPTION: <write something here so we know what you did>
+    Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable
+    evaluation function (question 5).
     """
 
-    score = scoreEvaluationFunction(currentGameState)
-    newFood = currentGameState.getFood()
-    newPos = currentGameState.getPacmanPosition()
+    def _scoreFromGhost(gameState):
+      score = 0
+      for ghost in gameState.getGhostStates():
+        disGhost = manhattanDistance(gameState.getPacmanPosition(), ghost.getPosition())
+        if ghost.scaredTimer > 0:
+          score += pow(max(8 - disGhost, 0), 2)
+        else:
+          score -= pow(max(7 - disGhost, 0), 2)
+      return score
 
-    if currentGameState.isWin():
-        return float("inf")
-    if currentGameState.isLose():
-        return float("-inf")
+    def _scoreFromFood(gameState):
+      disFood = []
+      for food in gameState.getFood().asList():
+        disFood.append(1.0/manhattanDistance(gameState.getPacmanPosition(), food))
+      if len(disFood)>0:
+        return max(disFood)
+      else:
+        return 0
 
-    ghostDist = []
-    for i in range(1, currentGameState.getNumAgents()):
-        ghostDist.append(util.manhattanDistance(currentGameState.getGhostPosition(i), newPos))
-    if min(ghostDist) < 2:
-        return float("-inf")
+    def _scoreFromCapsules(gameState):
+      score = []
+      for Cap in gameState.getCapsules():
+        score.append(50.0/manhattanDistance(gameState.getPacmanPosition(), Cap))
+      if len(score) > 0:
+        return max(score)
+      else:
+        return 0
 
-    foodDist = []
-    for food in list(newFood.asList()):
-        foodDist.append(util.manhattanDistance(food, newPos))
+    def _suicide(gameState):
+      score = 0
+      disGhost = 1e6
+      for ghost in gameState.getGhostStates():
+        disGhost = min(manhattanDistance(gameState.getPacmanPosition(), ghost.getPosition()), disGhost)
+      score -= pow(disGhost, 2)
+      if gameState.isLose():
+        score = 1e6
+      return score
 
-    return score - 2*min(foodDist) - 2*max(foodDist) + min(ghostDist) + max(ghostDist) - 10*currentGameState.getNumFood() -10*currentGameState.getNumAgents()
+    score = currentGameState.getScore()
+    scoreGhosts = _scoreFromGhost(currentGameState)
+    scoreFood = _scoreFromFood(currentGameState)
+    scoreCapsules = _scoreFromCapsules(currentGameState)
+
+    return score + scoreGhosts + scoreFood + scoreCapsules
 
 # Abbreviation
 better = betterEvaluationFunction
