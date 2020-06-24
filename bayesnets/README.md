@@ -1,0 +1,2 @@
+- ubuntu: `pip3 install pomegranate==0.10`
+- windows: `pip install pomegranate==0.10`
