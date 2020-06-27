@@ -1,4 +1,6 @@
 import numpy as np
+import random
+import copy
 
 
 class Factor:
@@ -85,63 +87,57 @@ class BayesianNetwork:
 
     def exact_inference(self, filename):
         result = 0
-        with open(filename, 'r') as f:
-            query_var, evid_var = self.__extract_query(f.readline())
-
-            # Check exceoption
-            for x in evid_var:
-                try:
-                    if evid_var[x] == query_var[x]:
-                        query_var.pop(x)
-                    else:
-                        return 0
-                except:
-                    pass
-
-            # Step 1: select probability factor
-            for F in self.factors:
-                F.select(evid_var)
-
-            # Step 2: Find hiden variable set (in-order)
-            hiden_vars = list()
-            for x in self.nodes:
-                if x not in query_var:
-                    if x not in evid_var:
-                        hiden_vars.append(x)
-
-            # Step 3: Remove hiden variables
-            for z in hiden_vars:
-                new_factor = None
-                for F in self.factors:
-                    if F.contain(z):
-                        new_factor = F.product(new_factor)
-
-                filtered = filter(lambda x: not x.contain(z), self.factors)
-                self.factors = list(filtered)
-
-                if new_factor != None:
-                    new_factor.reduce(z)
-                    self.factors.append(new_factor)
-
-            # Step 4: Product Fator
-            prod = None
-            for F in self.factors:
-                prod = F.product(prod)
-
-            # Step 5: Normalize trick
-            alpha = prod.prob.sum()
-            prod.prob = prod.prob/alpha
-            prod.select(query_var)
-            result = prod.prob.reshape(1)[0]
-
-        return result
-
-    def approx_inference(self, filename):
-        result = 0
         f = open(filename, 'r')
-        # YOUR CODE HERE
+        query_var, evid_var = self.__extract_query(f.readline())
 
-        f.close()
+        ls_factor = copy.deepcopy(self.factors)
+
+        # Check exceoption
+        for x in evid_var:
+            try:
+                if evid_var[x] == query_var[x]:
+                    query_var.pop(x)
+                else:
+                    return 0
+            except:
+                pass
+
+        # Step 1: select probability factor
+        for F in ls_factor:
+            F.select(evid_var)
+
+        # Step 2: Find hiden variable set (in-order)
+        hiden_vars = list()
+        for x in self.nodes:
+            if x not in query_var:
+                if x not in evid_var:
+                    hiden_vars.append(x)
+
+        # Step 3: Remove hiden variables
+        for z in hiden_vars:
+            new_factor = None
+            for F in ls_factor:
+                if F.contain(z):
+                    new_factor = F.product(new_factor)
+
+            filtered = filter(lambda x: not x.contain(z), ls_factor)
+            ls_factor = list(filtered)
+
+            if new_factor != None:
+                new_factor.reduce(z)
+                ls_factor.append(new_factor)
+
+        # Step 4: Product Fator
+        prod = None
+        for F in ls_factor:
+            prod = F.product(prod)
+
+        # Step 5: Normalize trick
+        alpha = prod.prob.sum()
+        prod.prob = prod.prob/alpha
+        prod.select(query_var)
+        result = prod.prob.reshape(1)[0]
+
         return result
 
     def __extract_query(self, line) -> (dict, dict):
