@@ -140,6 +140,57 @@ class BayesianNetwork:
 
         return result
 
+    def approx_inference(self, filename):
+        result = 0
+
+        f = open(filename, 'r')
+        query_var, evid_var = self.__extract_query(f.readline())
+        f.close()
+
+        M = 10000
+        query_sum = weight_sum = 0
+        for i in range(M):
+            sample, weight = self.__gen_sample(evid_var)
+            weight_sum = weight_sum + weight
+
+            flag = True
+            for key, value in query_var.items():
+                if sample[key] != value:
+                    flag = False
+                    break
+            if flag:
+                query_sum = query_sum + weight
+
+        result = query_sum / weight_sum
+
+        return result
+
+    def __gen_sample(self, evid) -> (tuple, float):
+        ls_factor = copy.deepcopy(self.factors)
+        sample = copy.deepcopy(evid)
+        weight = 1
+
+        for i, namenode in enumerate(self.nodes):
+            factor = ls_factor[i]
+            factor.select(sample)
+            p_range = factor.prob.flatten().tolist()
+
+            if namenode not in evid:
+                rand_number = random.random()
+
+                reg = index = 0
+                for i, p in enumerate(p_range):
+                    reg = reg + p
+                    if rand_number < reg:
+                        index = i
+                        break
+
+                sample.update({namenode: index})
+            else:
+                weight = weight * p_range[0]
+
+        return sample, weight
+
     def __extract_query(self, line) -> (dict, dict):
         parts = line.split(';')
 
